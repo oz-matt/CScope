@@ -1,8 +1,46 @@
-#include "mainwindow.h"
-#include "hantekdso/hantekdsocontrol.h"
 #include <QApplication>
+#include <QCommandLineParser>
+#include <QDebug>
+#include <QLibraryInfo>
+#include <QLocale>
+#include <QSurfaceFormat>
+#include <QTranslator>
+#ifdef __linux__
+#include <QStyleFactory>
+#endif
+#include <iostream>
+#include <libusb-1.0/libusb.h>
+#include <memory>
+
+// Settings
 #include "settings.h"
 #include "viewconstants.h"
+
+// DSO core logic
+#include "dsomodel.h"
+#include "hantekdsocontrol.h"
+#include "usb/usbdevice.h"
+
+// Post processing
+#include "post/graphgenerator.h"
+#include "post/mathchannelgenerator.h"
+#include "post/postprocessing.h"
+#include "post/spectrumgenerator.h"
+
+// Exporter
+#include "exporting/exportcsv.h"
+#include "exporting/exporterprocessor.h"
+#include "exporting/exporterregistry.h"
+#include "exporting/exportimage.h"
+#include "exporting/exportprint.h"
+
+// GUI
+#include "iconfont/QtAwesome.h"
+#include "mainwindow.h"
+#include "selectdevice/selectsupporteddevice.h"
+
+// OpenGL setup
+#include "glscope.h"
 
 /// \brief Initialize the device with the current settings.
 void applySettingsToDevice(HantekDsoControl *dsoControl, DsoSettingsScope *scope,
@@ -26,7 +64,12 @@ void applySettingsToDevice(HantekDsoControl *dsoControl, DsoSettingsScope *scope
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
+
+    HantekDsoControl dsoControl(nullptr);
+    DsoSettings settings(nullptr);
+    ExporterRegistry exportRegistry(nullptr, &settings);
+
+    MainWindow w(&dsoControl, &settings, &exportRegistry);
     w.show();
     return a.exec();
 }
